@@ -227,6 +227,7 @@
           <button class="btn ghost sm" id="testSound">🔔 Probar sonido</button>
           <button class="btn ghost sm" id="testVoice">🗣️ Probar voz</button>
         </div>
+        <p style="font-size:12px;color:var(--violet-d);margin:8px 0 0;font-weight:700" id="voiceStatus"></p>
         <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Consejo: sube el volumen y quita el silencio del teléfono.</p>
       </div>
     </div>
@@ -304,7 +305,7 @@
   function fmtTime(s){var m=Math.floor(s/60),ss=s%60;return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss;}
   function countBy(m){return BANCO.filter(function(q){return q.modulo===m;}).length;}
   function vibrate(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
-  var APP_VERSION="v5";
+  var APP_VERSION="v6";
 
   // ---------- PWA: instalar + service worker ----------
   var deferredPrompt=null;
@@ -343,32 +344,45 @@
   function scoreVoice(v){var l=(v.lang||"").toLowerCase(),n=(v.name||"").toLowerCase(),s=0;
     if(l.indexOf("es-cl")===0)s+=100;else if(l.indexOf("es-419")===0)s+=80;else if(l.indexOf("es-mx")===0)s+=70;else if(l.indexOf("es-us")===0)s+=60;else if(l.indexOf("es-ar")===0||l.indexOf("es-co")===0||l.indexOf("es-pe")===0)s+=55;else if(l.indexOf("es-es")===0)s+=50;else if(l.indexOf("es")===0)s+=40;
     if(n.indexOf("google")>=0)s+=8;if(n.indexOf("microsoft")>=0)s+=6;return s;}
-  function loadVoices(){ if(!synth)return; voices=(synth.getVoices()||[]).filter(function(v){return (v.lang||"").toLowerCase().indexOf("es")===0;});
-    var sel=$("voiceSel"),hint=$("voiceHint"); sel.innerHTML="";
-    if(!voices.length){hint.textContent="Este dispositivo no tiene voces en español. La lectura queda desactivada.";$("voiceOn").checked=false;$("voiceOn").disabled=true;sel.disabled=true;return;}
+  function loadVoices(){
+    if(!synth)return;
+    var all=synth.getVoices()||[];
+    voices=all.filter(function(v){return (v.lang||"").toLowerCase().indexOf("es")===0;});
+    var sel=$("voiceSel"),hint=$("voiceHint");
+    $("voiceOn").disabled=false; sel.disabled=false; // NUNCA bloquear el control de voz
+    if(!voices.length){
+      sel.innerHTML="";
+      hint.textContent = all.length ? "Sin voz en español; se usará la voz por defecto del dispositivo." : "Buscando voces del dispositivo…";
+      return; // pueden llegar después (onvoiceschanged)
+    }
     voices.sort(function(a,b){return scoreVoice(b)-scoreVoice(a);}); chosenVoice=voices[0];
+    sel.innerHTML="";
     voices.forEach(function(v,i){var o=el("option");o.value=i;o.textContent=v.name+" ("+v.lang+")";sel.appendChild(o);});
     sel.value=0; hint.textContent="Voz elegida automáticamente: "+chosenVoice.name+".";
   }
   if(synth){ loadVoices(); if(typeof synth.onvoiceschanged!=="undefined")synth.onvoiceschanged=loadVoices; setTimeout(loadVoices,600); }
   else{ $("voiceOn").checked=false;$("voiceOn").disabled=true;$("voiceSel").disabled=true;$("voiceHint").textContent="Este navegador no soporta lectura por voz."; }
   function stopSpeak(){ if(synth){try{synth.cancel();}catch(e){}} }
+  function setVoiceStatus(t){ var s=$("voiceStatus"); if(s)s.textContent=t; }
   var _utter=null; // referencia persistente: evita que Chrome recolecte la voz antes de sonar
   function speak(q){
-    if(!synth||!$("voiceOn").checked)return;
-    if(!chosenVoice)loadVoices();
+    if(!synth){ setVoiceStatus("Este navegador no soporta lectura por voz."); return; }
+    if(!$("voiceOn").checked){ setVoiceStatus("La voz está desactivada (activa la casilla)."); return; }
+    if(!chosenVoice) loadVoices();
     var txt=q.enunciado+". "; if(q.imagen)txt+="Pregunta con figura. ";
     (q.alternativas||[]).forEach(function(a){txt+=" Opción "+a.letra+": "+a.texto+". ";});
-    try{synth.cancel();}catch(e){}
-    // pequeña espera tras cancel: en varios navegadores cancelar y hablar de inmediato anula la voz nueva
-    setTimeout(function(){
-      var u=new SpeechSynthesisUtterance(txt);
-      if(chosenVoice){u.voice=chosenVoice;u.lang=chosenVoice.lang||"es-CL";}else{u.lang="es-CL";}
-      u.rate=0.98; u.pitch=1.02;
-      _utter=u;
-      try{synth.speak(u);}catch(e){}
-      try{synth.resume();}catch(e){} // desatasca el estado "paused" de Chrome
-    },110);
+    // IMPORTANTE: hablar dentro del mismo toque; cancelar SOLO si algo está sonando (sin setTimeout)
+    try{ if(synth.speaking||synth.pending) synth.cancel(); }catch(e){}
+    var u=new SpeechSynthesisUtterance(txt);
+    if(chosenVoice){u.voice=chosenVoice;u.lang=chosenVoice.lang||"es-CL";}else{u.lang="es-CL";}
+    u.rate=0.98; u.pitch=1.02;
+    u.onstart=function(){ setVoiceStatus("🔊 Hablando…"); };
+    u.onend=function(){ setVoiceStatus("Voz lista ✓"); };
+    u.onerror=function(e){ setVoiceStatus("Error de voz: "+((e&&e.error)||"desconocido")); };
+    _utter=u;
+    setVoiceStatus("Iniciando voz… ("+(chosenVoice?chosenVoice.name:"voz por defecto")+")");
+    try{ synth.speak(u); }catch(e){ setVoiceStatus("No se pudo iniciar: "+e.message); }
+    try{ synth.resume(); }catch(e){}
   }
   $("voiceSel").addEventListener("change",function(){var i=parseInt(this.value,10);if(voices[i])chosenVoice=voices[i];$("voiceHint").textContent="Voz elegida: "+chosenVoice.name+".";});
   $("voiceOn").addEventListener("change",function(){if(!this.checked)stopSpeak();});
