@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Examen Clase B</title>
+<style>
+  :root{
+    --bg:#0f1f3d;
+    --bg2:#16305e;
+    --card:#ffffff;
+    --ink:#1d2b45;
+    --muted:#5a6b86;
+    --brand:#2f6bff;
+    --brand-d:#1c4fd6;
+    --accent:#ffb020;
+    --ok:#1faa5a;
+    --ok-bg:#e4f8ec;
+    --bad:#e2384d;
+    --bad-bg:#fde8ea;
+    --line:#e4e9f2;
+    --shadow:0 10px 30px rgba(10,25,60,.18);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg),var(--bg2));
+    min-height:100vh;
+    padding:16px;
+    padding-bottom:40px;
+  }
+  .wrap{max-width:720px;margin:0 auto}
+  header.top{
+    text-align:center;color:#fff;margin:8px 0 18px;
+  }
+  header.top h1{margin:0;font-size:26px;letter-spacing:.3px}
+  header.top p{margin:6px 0 0;opacity:.85;font-size:14px}
+  .card{
+    background:var(--card);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px;margin-bottom:16px;
+  }
+  h2.sec{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 12px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media(min-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .chip{
+    border:2px solid var(--line);background:#f7f9ff;border-radius:14px;
+    padding:14px 10px;text-align:center;cursor:pointer;font-weight:700;font-size:15px;
+    transition:transform .08s ease,border-color .15s,background .15s;color:var(--ink);
+    display:flex;flex-direction:column;gap:3px;align-items:center;user-select:none;
+  }
+  .chip small{font-weight:600;color:var(--muted);font-size:12px}
+  .chip:active{transform:scale(.97)}
+  .chip.sel{border-color:var(--brand);background:#eaf1ff;box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+  .modes{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:520px){.modes{grid-template-columns:repeat(3,1fr)}}
+  .mode{
+    border:2px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;
+    background:#fff;transition:transform .08s,border-color .15s,background .15s;user-select:none;
+  }
+  .mode:active{transform:scale(.98)}
+  .mode.sel{border-color:var(--accent);background:#fff8ea;box-shadow:0 0 0 3px rgba(255,176,32,.18)}
+  .mode .ico{font-size:26px}
+  .mode b{display:block;margin:6px 0 2px;font-size:16px}
+  .mode span{font-size:13px;color:var(--muted)}
+  .opts{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:6px}
+  .opts label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+  .opts input[type=checkbox]{width:20px;height:20px;accent-color:var(--brand)}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:none;border-radius:14px;padding:15px 20px;font-size:17px;font-weight:800;
+    cursor:pointer;transition:transform .08s,filter .15s;width:100%;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(47,107,255,.35)}
+  .btn.primary:hover{filter:brightness(1.05)}
+  .btn.ghost{background:#eef2fb;color:var(--ink)}
+  .btn.sm{padding:10px 14px;font-size:14px;width:auto;border-radius:12px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .voice-box{border-top:1px dashed var(--line);margin-top:16px;padding-top:14px}
+  .voice-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px}
+  select{
+    border:2px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;
+    background:#fff;color:var(--ink);max-width:100%;
+  }
+  /* progreso */
+  .bar{height:12px;background:#e9eefb;border-radius:99px;overflow:hidden;margin:4px 0 2px}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--accent));width:0;transition:width .3s}
+  .hud{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;gap:6px}
+  .hud b{color:var(--ink)}
+  .timer{font-variant-numeric:tabular-nums;font-weight:800;color:var(--brand)}
+  .modu-tag{display:inline-block;background:#eef2fb;color:var(--brand);font-weight:700;font-size:12px;padding:4px 10px;border-radius:99px}
+  .imgnote{background:#fff6e6;border:1px dashed var(--accent);color:#8a5b00;border-radius:12px;padding:10px 12px;font-size:13px;margin:12px 0}
+  .enun{font-size:19px;font-weight:700;line-height:1.4;margin:12px 0 16px}
+  .alts{display:flex;flex-direction:column;gap:10px}
+  .alt{
+    display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+    border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px;
+    font-size:16px;cursor:pointer;transition:transform .06s,border-color .15s,background .15s;color:var(--ink);
+  }
+  .alt:active{transform:scale(.99)}
+  .alt .ltr{
+    flex:0 0 30px;height:30px;border-radius:50%;background:#eef2fb;color:var(--brand);
+    display:flex;align-items:center;justify-content:center;font-weight:800;text-transform:uppercase;
+  }
+  .alt.ok{border-color:var(--ok);background:var(--ok-bg)}
+  .alt.ok .ltr{background:var(--ok);color:#fff}
+  .alt.bad{border-color:var(--bad);background:var(--bad-bg)}
+  .alt.bad .ltr{background:var(--bad);color:#fff}
+  .alt.dim{opacity:.6}
+  .alt[disabled]{cursor:default}
+  .feedback{margin-top:14px;font-weight:800;font-size:16px;display:none}
+  .feedback.ok{color:var(--ok);display:block}
+  .feedback.bad{color:var(--bad);display:block}
+  .nota{background:#f2f6ff;border-left:4px solid var(--brand);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px;color:var(--muted)}
+  .nav{display:flex;gap:10px;margin-top:18px}
+  .nav .btn{flex:1}
+  /* resultado */
+  .result{text-align:center}
+  .bigscore{font-size:58px;font-weight:900;margin:6px 0;line-height:1}
+  .emoji{font-size:60px;margin:4px 0}
+  .stats{display:flex;gap:12px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+  .stat{background:#f7f9ff;border-radius:14px;padding:12px 18px;min-width:100px}
+  .stat b{display:block;font-size:24px}
+  .stat span{font-size:12px;color:var(--muted)}
+  .conf{position:fixed;top:-10px;width:10px;height:14px;opacity:.9;z-index:50;border-radius:2px;pointer-events:none}
+  @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:1}}
+  @keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .35s ease}
+  .foot{text-align:center;color:#ffffff99;font-size:12px;margin-top:6px}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>🚗 Examen Clase B</h1>
+    <p>Práctica teórica de conducir · para Ada</p>
+  </header>
+
+  <!-- ============ MENÚ ============ -->
+  <section id="menu">
+    <div class="card">
+      <h2 class="sec">1 · Elige un módulo</h2>
+      <div class="grid" id="modGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">2 · Elige el modo</h2>
+      <div class="modes" id="modeGrid">
+        <div class="mode" data-mode="estudio">
+          <div class="ico">📖</div><b>Estudio</b>
+          <span>Lee cada pregunta con su respuesta correcta ya marcada.</span>
+        </div>
+        <div class="mode" data-mode="ejercitacion">
+          <div class="ico">✍️</div><b>Ejercitación</b>
+          <span>Responde y recibe corrección al instante, con puntaje.</span>
+        </div>
+        <div class="mode" data-mode="ensayo">
+          <div class="ico">⏱️</div><b>Ensayo</b>
+          <span>Simulacro con 25 preguntas al azar y cronómetro.</span>
+        </div>
+      </div>
+      <div class="opts" style="margin-top:14px">
+        <label id="shuffleWrap"><input type="checkbox" id="shuffleQ" checked> Mezclar el orden de las preguntas</label>
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn primary" id="startBtn" disabled>▶ Comenzar</button>
+      </div>
+
+      <div class="voice-box">
+        <h2 class="sec" style="margin-bottom:8px">🔊 Voz (lectura en voz alta)</h2>
+        <div class="voice-row">
+          <label class="opts" style="margin:0"><input type="checkbox" id="voiceOn" checked> Activar voz</label>
+          <select id="voiceSel" title="Elegir voz"></select>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 0" id="voiceHint">Buscando voces en español…</p>
+      </div>
+    </div>
+    <p class="foot">250 preguntas · fuente: curso Clase B + catálogo CONASET</p>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz" class="hidden">
+    <div class="card">
+      <div class="hud">
+        <span class="modu-tag" id="qModu">Módulo</span>
+        <span id="qCount">1 / 10</span>
+        <span class="timer hidden" id="qTimer">00:00</span>
+        <span id="qScore"><b>0</b> aciertos</span>
+      </div>
+      <div class="bar"><i id="qBar"></i></div>
+
+      <div id="imgNote" class="imgnote hidden">🖼️ Pregunta con figura — referencia visual pendiente. Responde según el texto.</div>
+      <div class="enun" id="qEnun"></div>
+      <button class="btn ghost sm" id="speakBtn" style="margin-bottom:14px">🔊 Escuchar</button>
+
+      <div class="alts" id="qAlts"></div>
+      <div class="feedback" id="qFeed"></div>
+      <div class="nota hidden" id="qNota"></div>
+
+      <div class="nav" id="qNav"></div>
+    </div>
+    <button class="btn ghost" id="exitBtn">✖ Salir al menú</button>
+    <p class="foot"></p>
+  </section>
+
+  <!-- ============ RESULTADO ============ -->
+  <section id="result" class="hidden">
+    <div class="card result">
+      <div class="emoji pop" id="rEmoji">🎉</div>
+      <div class="bigscore" id="rPct">0%</div>
+      <div id="rMsg" style="font-size:18px;font-weight:700"></div>
+      <div class="stats">
+        <div class="stat"><b id="rOk" style="color:var(--ok)">0</b><span>aciertos</span></div>
+        <div class="stat"><b id="rBad" style="color:var(--bad)">0</b><span>errores</span></div>
+        <div class="stat"><b id="rTot">0</b><span>total</span></div>
+      </div>
+      <div id="rTimeWrap" class="hidden" style="margin-bottom:14px;color:var(--muted)">⏱️ Tiempo: <b id="rTime" style="color:var(--brand)">00:00</b></div>
+      <div class="nav">
+        <button class="btn ghost" id="rReview">📋 Revisar errores</button>
+        <button class="btn primary" id="rAgain">🔁 Otra vez</button>
+      </div>
+      <div style="margin-top:10px"><button class="btn ghost" id="rMenu">🏠 Menú</button></div>
+    </div>
+  </section>
+</div>
+
+<script src="preguntas.js"></script>
+<script>
+(function(){
+  "use strict";
+  var BANCO = (window.PREGUNTAS || []).slice();
+  var MODULOS = ["Módulo 2","Tema 3","Módulo 3","Módulo 4","Módulo 5","Módulo 6","Módulo 7","Ensayo municipal","Señalización"];
+  var LETRAS = ["a","b","c","d","e","f"];
+
+  // ---------- utilidades ----------
+  function $(id){return document.getElementById(id);}
+  function el(tag,cls){var e=document.createElement(tag);if(cls)e.className=cls;return e;}
+  function shuffle(arr){
+    var a=arr.slice();
+    for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+    return a;
+  }
+  function fmtTime(s){
+    var m=Math.floor(s/60), ss=s%60;
+    return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss;
+  }
+  function countBy(mod){return BANCO.filter(function(q){return q.modulo===mod;}).length;}
+
+  // ---------- sonido (Web Audio) ----------
+  var actx=null;
+  function ensureAudio(){
+    if(actx)return;
+    try{var AC=window.AudioContext||window.webkitAudioContext; if(AC)actx=new AC();}catch(e){actx=null;}
+  }
+  function beep(freqs,dur,type){
+    if(!actx)return;
+    try{
+      var t0=actx.currentTime;
+      freqs.forEach(function(f,i){
+        var o=actx.createOscillator(), g=actx.createGain();
+        o.type=type||"sine"; o.frequency.value=f;
+        var start=t0+i*dur*0.9;
+        o.connect(g); g.connect(actx.destination);
+        g.gain.setValueAtTime(0.0001,start);
+        g.gain.exponentialRampToValueAtTime(0.18,start+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001,start+dur);
+        o.start(start); o.stop(start+dur);
+      });
+    }catch(e){}
+  }
+  function soundOk(){ensureAudio();beep([660,880,1175],0.16,"sine");}
+  function soundBad(){ensureAudio();beep([220,160],0.22,"square");}
+
+  // ---------- voz (Web Speech) ----------
+  var synth = ("speechSynthesis" in window) ? window.speechSynthesis : null;
+  var voices=[], chosenVoice=null;
+  function scoreVoice(v){
+    var l=(v.lang||"").toLowerCase(), n=(v.name||"").toLowerCase(), s=0;
+    if(l.indexOf("es-cl")===0||l==="es_cl")s+=100;
+    else if(l.indexOf("es-419")===0)s+=80;
+    else if(l.indexOf("es-mx")===0)s+=70;
+    else if(l.indexOf("es-us")===0)s+=60;
+    else if(l.indexOf("es-ar")===0||l.indexOf("es-co")===0||l.indexOf("es-pe")===0)s+=55;
+    else if(l.indexOf("es-es")===0)s+=50;
+    else if(l.indexOf("es")===0)s+=40;
+    if(n.indexOf("google")>=0)s+=8;
+    if(n.indexOf("microsoft")>=0)s+=6;
+    return s;
+  }
+  function loadVoices(){
+    if(!synth)return;
+    voices=(synth.getVoices()||[]).filter(function(v){return (v.lang||"").toLowerCase().indexOf("es")===0;});
+    var sel=$("voiceSel"), hint=$("voiceHint");
+    sel.innerHTML="";
+    if(!voices.length){
+      hint.textContent="Este dispositivo no tiene voces en español. La lectura queda desactivada.";
+      $("voiceOn").checked=false; $("voiceOn").disabled=true; sel.disabled=true;
+      return;
+    }
+    voices.sort(function(a,b){return scoreVoice(b)-scoreVoice(a);});
+    chosenVoice=voices[0];
+    voices.forEach(function(v,i){
+      var o=el("option"); o.value=i; o.textContent=v.name+" ("+v.lang+")"; sel.appendChild(o);
+    });
+    sel.value=0;
+    hint.textContent="Voz elegida automáticamente: "+chosenVoice.name+".";
+  }
+  if(synth){
+    loadVoices();
+    if(typeof synth.onvoiceschanged!=="undefined") synth.onvoiceschanged=loadVoices;
+    setTimeout(loadVoices,600);
+  }else{
+    $("voiceOn").checked=false; $("voiceOn").disabled=true; $("voiceSel").disabled=true;
+    $("voiceHint").textContent="Este navegador no soporta lectura por voz.";
+  }
+  function stopSpeak(){ if(synth){try{synth.cancel();}catch(e){}} }
+  function speak(q){
+    if(!synth||!$("voiceOn").checked||!chosenVoice)return;
+    stopSpeak();
+    var txt=q.enunciado+". ";
+    if(q.imagen) txt+="Pregunta con figura. ";
+    q.alternativas.forEach(function(a){ txt+=" Opción "+a.letra+": "+a.texto+". "; });
+    var u=new SpeechSynthesisUtterance(txt);
+    u.voice=chosenVoice; u.lang=chosenVoice.lang||"es-CL"; u.rate=0.98; u.pitch=1;
+    try{synth.speak(u);}catch(e){}
+  }
+  $("voiceSel").addEventListener("change",function(){
+    var i=parseInt(this.value,10); if(voices[i])chosenVoice=voices[i];
+    $("voiceHint").textContent="Voz elegida: "+chosenVoice.name+".";
+  });
+  $("voiceOn").addEventListener("change",function(){ if(!this.checked)stopSpeak(); });
+
+  // ---------- estado del menú ----------
+  var selMod=null, selMode=null;
+  function buildMenu(){
+    var g=$("modGrid");
+    var all=el("div","chip"); all.dataset.mod="__all__";
+    all.innerHTML='🎲 Mezclar todos<small>'+BANCO.length+' preguntas</small>';
+    g.appendChild(all);
+    MODULOS.forEach(function(m){
+      var c=countBy(m); if(!c)return;
+      var chip=el("div","chip"); chip.dataset.mod=m;
+      chip.innerHTML=m+'<small>'+c+' preguntas</small>';
+      g.appendChild(chip);
+    });
+    g.addEventListener("click",function(e){
+      var chip=e.target.closest(".chip"); if(!chip)return;
+      Array.prototype.forEach.call(g.children,function(c){c.classList.remove("sel");});
+      chip.classList.add("sel"); selMod=chip.dataset.mod; refreshStart();
+    });
+    var mg=$("modeGrid");
+    mg.addEventListener("click",function(e){
+      var m=e.target.closest(".mode"); if(!m)return;
+      Array.prototype.forEach.call(mg.children,function(c){c.classList.remove("sel");});
+      m.classList.add("sel"); selMode=m.dataset.mode;
+      $("shuffleWrap").style.display = (selMode==="ensayo") ? "none" : "flex";
+      refreshStart();
+    });
+  }
+  function refreshStart(){ $("startBtn").disabled = !(selMod && selMode); }
+
+  // ---------- construir sesión ----------
+  var S=null; // sesión actual
+  function poolFor(mod){
+    return (mod==="__all__") ? BANCO.slice() : BANCO.filter(function(q){return q.modulo===mod;});
+  }
+  function prepQuestion(q, doShuffle){
+    // copia con alternativas (opcionalmente barajadas)
+    var alts = doShuffle ? shuffle(q.alternativas) : q.alternativas.slice();
+    return {ref:q, alts:alts};
+  }
+  function startSession(){
+    ensureAudio(); // desbloquear audio con gesto del usuario
+    var pool=poolFor(selMod);
+    var order=$("shuffleQ").checked;
+    var list;
+    if(selMode==="ensayo"){
+      list=shuffle(pool).slice(0, Math.min(25,pool.length));
+    }else{
+      list = order ? shuffle(pool) : pool.slice();
+    }
+    var doShuffleAlts = (selMode!=="estudio");
+    S={
+      mode:selMode,
+      items:list.map(function(q){return prepQuestion(q,doShuffleAlts);}),
+      idx:0, correct:0, wrong:0, answered:[], // answered[i]=letra elegida o null
+      startTs:0, timer:null, elapsed:0
+    };
+    S.answered=S.items.map(function(){return undefined;});
+    show("quiz");
+    $("qTimer").classList.toggle("hidden", S.mode!=="ensayo");
+    $("qScore").parentNode; // noop
+    document.getElementById("qScore").style.display = (S.mode==="estudio")?"none":"";
+    if(S.mode==="ensayo"){
+      S.startTs=Date.now();
+      S.timer=setInterval(function(){
+        S.elapsed=Math.floor((Date.now()-S.startTs)/1000);
+        $("qTimer").textContent=fmtTime(S.elapsed);
+      },1000);
+      $("qTimer").textContent="00:00";
+    }
+    renderQ();
+  }
+
+  // ---------- render de pregunta ----------
+  function renderQ(){
+    var it=S.items[S.idx], q=it.ref;
+    $("qModu").textContent=q.modulo;
+    $("qCount").textContent=(S.idx+1)+" / "+S.items.length;
+    $("qScore").innerHTML="<b>"+S.correct+"</b> aciertos";
+    $("qBar").style.width=((S.idx)/S.items.length*100)+"%";
+    $("imgNote").classList.toggle("hidden", !q.imagen);
+    $("qEnun").textContent=q.enunciado;
+    var feed=$("qFeed"); feed.className="feedback"; feed.textContent="";
+    var nota=$("qNota"); nota.classList.add("hidden"); nota.textContent="";
+
+    var box=$("qAlts"); box.innerHTML="";
+    var prevAns = S.answered[S.idx]; // letra elegida antes (o undefined)
+
+    it.alts.forEach(function(a){
+      var b=el("button","alt");
+      b.innerHTML='<span class="ltr">'+a.letra+'</span><span>'+a.texto+'</span>';
+      b.dataset.letra=a.letra;
+      if(S.mode==="estudio"){
+        b.setAttribute("disabled","");
+        if(a.letra===q.correcta) b.classList.add("ok");
+      }else if(prevAns!==undefined){
+        markAnswered(b,a.letra,q,prevAns);
+      }else{
+        b.addEventListener("click",function(){onAnswer(a.letra,b);});
+      }
+      box.appendChild(b);
+    });
+
+    if(S.mode==="estudio"){
+      if(q.nota){ nota.textContent="ℹ️ "+q.nota; nota.classList.remove("hidden"); }
+      $("qBar").style.width=((S.idx+1)/S.items.length*100)+"%";
+    }else if(prevAns!==undefined){
+      showFeedback(prevAns===q.correcta, q);
+    }
+
+    buildNav();
+    stopSpeak();
+  }
+
+  function markAnswered(btn,letra,q,chosen){
+    btn.setAttribute("disabled","");
+    if(letra===q.correcta) btn.classList.add("ok");
+    else if(letra===chosen) btn.classList.add("bad");
+    else btn.classList.add("dim");
+  }
+
+  function onAnswer(letra,btn){
+    var it=S.items[S.idx], q=it.ref;
+    if(S.answered[S.idx]!==undefined) return;
+    S.answered[S.idx]=letra;
+    var ok=(letra===q.correcta);
+    if(ok)S.correct++; else S.wrong++;
+    // marcar todas
+    Array.prototype.forEach.call($("qAlts").children,function(b){
+      markAnswered(b,b.dataset.letra,q,letra);
+    });
+    if(ok)soundOk(); else soundBad();
+    showFeedback(ok,q);
+    $("qScore").innerHTML="<b>"+S.correct+"</b> aciertos";
+    buildNav();
+  }
+
+  function showFeedback(ok,q){
+    var feed=$("qFeed");
+    if(ok){ feed.className="feedback ok"; feed.textContent="✅ ¡Correcto!"; }
+    else{
+      feed.className="feedback bad";
+      feed.textContent="❌ Incorrecto. La respuesta correcta es "+q.correcta.toUpperCase()+".";
+    }
+    if(q.nota){ var n=$("qNota"); n.textContent="ℹ️ "+q.nota; n.classList.remove("hidden"); }
+  }
+
+  function buildNav(){
+    var nav=$("qNav"); nav.innerHTML="";
+    var isLast=(S.idx===S.items.length-1);
+    if(S.mode==="estudio"){
+      var prev=el("button","btn ghost"); prev.textContent="◀ Anterior";
+      prev.disabled=(S.idx===0); prev.onclick=function(){S.idx--;renderQ();};
+      var next=el("button","btn primary"); next.textContent=isLast?"✔ Terminar":"Siguiente ▶";
+      next.onclick=function(){ if(isLast){finish();}else{S.idx++;renderQ();} };
+      nav.appendChild(prev); nav.appendChild(next);
+    }else{
+      var answered=(S.answered[S.idx]!==undefined);
+      var btn=el("button","btn primary");
+      btn.textContent=isLast?"🏁 Ver resultado":"Siguiente ▶";
+      btn.disabled=!answered;
+      btn.onclick=function(){ if(isLast){finish();}else{S.idx++;renderQ();} };
+      nav.appendChild(btn);
+    }
+  }
+
+  // ---------- resultado ----------
+  function finish(){
+    if(S.timer){clearInterval(S.timer);S.timer=null;}
+    stopSpeak();
+    if(S.mode==="estudio"){ show("menu"); return; }
+    var tot=S.items.length, ok=S.correct, pct=Math.round(ok/tot*100);
+    $("rPct").textContent=pct+"%";
+    $("rOk").textContent=ok; $("rBad").textContent=S.wrong; $("rTot").textContent=tot;
+    var emoji,msg;
+    if(pct>=90){emoji="🏆";msg="¡Excelente, Ada! Vas volando.";}
+    else if(pct>=75){emoji="🎉";msg="¡Muy bien! Estás en nivel de aprobar.";}
+    else if(pct>=60){emoji="💪";msg="Vas bien, sigue practicando los errores.";}
+    else{emoji="📚";msg="A repasar con calma. ¡Tú puedes!";}
+    $("rEmoji").textContent=emoji; $("rMsg").textContent=msg;
+    $("rEmoji").classList.remove("pop"); void $("rEmoji").offsetWidth; $("rEmoji").classList.add("pop");
+    $("rTimeWrap").classList.toggle("hidden", S.mode!=="ensayo");
+    if(S.mode==="ensayo"){ $("rTime").textContent=fmtTime(S.elapsed); }
+    show("result");
+    if(pct>=75){ confetti(); soundOk(); }
+    // revisar errores disponible solo si hubo errores
+    $("rReview").style.display = (S.wrong>0)?"":"none";
+  }
+
+  function reviewErrors(){
+    // reconstruir sesión solo con las falladas, en modo revisión (estudio)
+    var wrongItems=[];
+    S.items.forEach(function(it,i){
+      if(S.answered[i]!==it.ref.correcta) wrongItems.push(it.ref);
+    });
+    if(!wrongItems.length){show("menu");return;}
+    S={mode:"estudio",items:wrongItems.map(function(q){return prepQuestion(q,false);}),
+       idx:0,correct:0,wrong:0,answered:wrongItems.map(function(){return undefined;}),
+       startTs:0,timer:null,elapsed:0};
+    show("quiz");
+    $("qTimer").classList.add("hidden");
+    document.getElementById("qScore").style.display="none";
+    renderQ();
+  }
+
+  // ---------- confeti ----------
+  function confetti(){
+    var cols=["#2f6bff","#ffb020","#1faa5a","#e2384d","#8a5bff","#ff6bcb"];
+    for(var i=0;i<70;i++){
+      (function(){
+        var c=el("div","conf");
+        c.style.left=(Math.random()*100)+"vw";
+        c.style.background=cols[i%cols.length];
+        c.style.transform="translateY(-20px)";
+        var dur=2.5+Math.random()*2;
+        c.style.animation="fall "+dur+"s linear "+ (Math.random()*0.6)+"s forwards";
+        document.body.appendChild(c);
+        setTimeout(function(){c.remove();},(dur+1)*1000);
+      })();
+    }
+  }
+
+  // ---------- navegación de pantallas ----------
+  function show(name){
+    ["menu","quiz","result"].forEach(function(s){ $(s).classList.toggle("hidden", s!==name); });
+    window.scrollTo(0,0);
+  }
+
+  // ---------- eventos ----------
+  $("startBtn").addEventListener("click",startSession);
+  $("speakBtn").addEventListener("click",function(){ ensureAudio(); if(S)speak(S.items[S.idx].ref); });
+  $("exitBtn").addEventListener("click",function(){ if(S&&S.timer){clearInterval(S.timer);} stopSpeak(); show("menu"); });
+  $("rAgain").addEventListener("click",function(){ selMode=S.mode; startSession(); });
+  $("rMenu").addEventListener("click",function(){ show("menu"); });
+  $("rReview").addEventListener("click",reviewErrors);
+
+  // ---------- init ----------
+  if(!BANCO.length){
+    document.getElementById("menu").innerHTML='<div class="card"><b>No se pudieron cargar las preguntas.</b><br>Asegúrate de que el archivo <code>preguntas.js</code> esté junto a este index.html.</div>';
+  }else{
+    buildMenu();
+  }
+})();
+</script>
+</body>
+</html>
