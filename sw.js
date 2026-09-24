@@ -1,7 +1,7 @@
 /* Service worker: permite instalar la app y usarla sin internet.
    Estrategia: contenido (html/js/manifest) => network-first (siempre trae lo último si hay red);
    imágenes/íconos => cache-first (rápidas y offline). */
-var CACHE = "examen-clase-b-v2";
+var CACHE = "examen-clase-b-v3";
 var ASSETS = [
   "./",
   "./index.html",
