@@ -304,7 +304,7 @@
   function fmtTime(s){var m=Math.floor(s/60),ss=s%60;return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss;}
   function countBy(m){return BANCO.filter(function(q){return q.modulo===m;}).length;}
   function vibrate(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
-  var APP_VERSION="v4";
+  var APP_VERSION="v5";
 
   // ---------- PWA: instalar + service worker ----------
   var deferredPrompt=null;
@@ -353,10 +353,22 @@
   if(synth){ loadVoices(); if(typeof synth.onvoiceschanged!=="undefined")synth.onvoiceschanged=loadVoices; setTimeout(loadVoices,600); }
   else{ $("voiceOn").checked=false;$("voiceOn").disabled=true;$("voiceSel").disabled=true;$("voiceHint").textContent="Este navegador no soporta lectura por voz."; }
   function stopSpeak(){ if(synth){try{synth.cancel();}catch(e){}} }
-  function speak(q){ if(!synth||!$("voiceOn").checked)return; if(!chosenVoice)loadVoices(); stopSpeak();
+  var _utter=null; // referencia persistente: evita que Chrome recolecte la voz antes de sonar
+  function speak(q){
+    if(!synth||!$("voiceOn").checked)return;
+    if(!chosenVoice)loadVoices();
     var txt=q.enunciado+". "; if(q.imagen)txt+="Pregunta con figura. ";
-    q.alternativas.forEach(function(a){txt+=" Opción "+a.letra+": "+a.texto+". ";});
-    var u=new SpeechSynthesisUtterance(txt); if(chosenVoice){u.voice=chosenVoice;u.lang=chosenVoice.lang||"es-CL";}else{u.lang="es-CL";} u.rate=0.98; u.pitch=1.02; try{synth.speak(u);}catch(e){}
+    (q.alternativas||[]).forEach(function(a){txt+=" Opción "+a.letra+": "+a.texto+". ";});
+    try{synth.cancel();}catch(e){}
+    // pequeña espera tras cancel: en varios navegadores cancelar y hablar de inmediato anula la voz nueva
+    setTimeout(function(){
+      var u=new SpeechSynthesisUtterance(txt);
+      if(chosenVoice){u.voice=chosenVoice;u.lang=chosenVoice.lang||"es-CL";}else{u.lang="es-CL";}
+      u.rate=0.98; u.pitch=1.02;
+      _utter=u;
+      try{synth.speak(u);}catch(e){}
+      try{synth.resume();}catch(e){} // desatasca el estado "paused" de Chrome
+    },110);
   }
   $("voiceSel").addEventListener("change",function(){var i=parseInt(this.value,10);if(voices[i])chosenVoice=voices[i];$("voiceHint").textContent="Voz elegida: "+chosenVoice.name+".";});
   $("voiceOn").addEventListener("change",function(){if(!this.checked)stopSpeak();});
