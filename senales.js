@@ -135,6 +135,57 @@
     '<path d="M30 70 L30 46 Q30 38 42 38 L64 38" fill="none" stroke="'+BLK+'" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>'+
     '<polygon points="60,28 78,38 60,48" fill="'+BLK+'"/>');
 
+  // ---- Señalización HORIZONTAL (marcas en la calzada) ----
+  var RD='<rect x="6" y="16" width="88" height="68" rx="8" fill="#41414a"/>';
+  var CAFE="#7a5230";
+
+  S.linea_continua = svg( RD+
+    '<rect x="12" y="46" width="76" height="7" rx="1" fill="#f4c430"/>');
+
+  S.linea_segmentada = svg( RD+
+    '<g fill="'+WHT+'"><rect x="14" y="46" width="14" height="7" rx="1"/><rect x="34" y="46" width="14" height="7" rx="1"/><rect x="54" y="46" width="14" height="7" rx="1"/><rect x="74" y="46" width="12" height="7" rx="1"/></g>');
+
+  S.tachas_rojas = svg( RD+
+    '<rect x="12" y="47.5" width="76" height="4" fill="'+WHT+'"/>'+
+    '<g fill="'+RED+'"><circle cx="22" cy="49.5" r="5"/><circle cx="42" cy="49.5" r="5"/><circle cx="62" cy="49.5" r="5"/><circle cx="82" cy="49.5" r="5"/></g>');
+
+  S.achurado = svg( RD+
+    '<g stroke="'+WHT+'" stroke-width="4" stroke-linecap="round">'+
+    '<line x1="16" y1="80" x2="42" y2="22"/><line x1="32" y1="80" x2="58" y2="22"/>'+
+    '<line x1="48" y1="80" x2="74" y2="22"/><line x1="62" y1="80" x2="86" y2="24"/></g>');
+
+  S.no_bloquear_cruce = svg( RD+
+    '<rect x="20" y="30" width="60" height="40" fill="none" stroke="'+YEL+'" stroke-width="3"/>'+
+    '<g stroke="'+YEL+'" stroke-width="2.5">'+
+    '<line x1="20" y1="50" x2="40" y2="30"/><line x1="20" y1="70" x2="60" y2="30"/>'+
+    '<line x1="40" y1="70" x2="80" y2="30"/><line x1="60" y1="70" x2="80" y2="50"/></g>');
+
+  S.paso_cebra = svg( RD+
+    '<g fill="'+WHT+'"><rect x="18" y="26" width="9" height="48"/><rect x="34" y="26" width="9" height="48"/><rect x="50" y="26" width="9" height="48"/><rect x="66" y="26" width="9" height="48"/></g>');
+
+  S.pista_emergencia = svg( RD+
+    '<g fill="'+WHT+'"><rect x="13" y="26" width="6" height="13"/><rect x="13" y="44" width="6" height="13"/><rect x="13" y="62" width="6" height="12"/></g>'+
+    '<circle cx="58" cy="50" r="17" fill="'+WHT+'"/>'+
+    '<rect x="54" y="40" width="8" height="20" fill="'+RED+'"/><rect x="48" y="46" width="20" height="8" fill="'+RED+'"/>');
+
+  // ---- muestras de categoría (representativas) ----
+  S.reglamentaria_sample = svg( circReg()+ slash() );
+
+  S.informativa_sample = svg(
+    '<rect x="6" y="6" width="88" height="88" rx="10" fill="'+BLU+'"/>'+
+    '<circle cx="50" cy="30" r="6" fill="'+WHT+'"/>'+
+    '<rect x="44" y="42" width="12" height="34" rx="3" fill="'+WHT+'"/>');
+
+  S.info_turistica = svg(
+    '<rect x="6" y="6" width="88" height="88" rx="10" fill="'+CAFE+'"/>'+
+    '<polygon points="50,24 57,43 77,43 61,55 67,75 50,62 33,75 39,55 23,43 43,43" fill="'+WHT+'"/>');
+
+  S.permitido_der_roja = svg(
+    '<rect x="8" y="8" width="84" height="84" rx="12" fill="'+WHT+'" stroke="'+BLK+'" stroke-width="3"/>'+
+    '<circle cx="34" cy="34" r="12" fill="'+RED+'"/>'+
+    '<path d="M38 66 L62 66" stroke="'+GRN+'" stroke-width="8" stroke-linecap="round"/>'+
+    '<polygon points="60,56 78,66 60,76" fill="'+GRN+'"/>');
+
   S.preventiva = S.curva; // muestra la forma (rombo amarillo)
 
   // ---- diccionario de coincidencias (frase normalizada -> clave) ----
@@ -165,6 +216,16 @@
     ["HOSPITAL","hospital"],
     ["TRABAJOS EN LA VIA","trabajos"],
     ["DESVIO","desvio"],
+    ["PERMITIDO VIRAR A LA DERECHA CON LUZ ROJA","permitido_der_roja"],
+    ["LINEA CONTINUA","linea_continua"],
+    ["LINEA SEGMENTADA","linea_segmentada"],
+    ["TACHAS DE COLOR ROJO","tachas_rojas"],
+    ["TACHAS","tachas_rojas"],
+    ["ACHURADO","achurado"],
+    ["NO BLOQUEAR CRUCE","no_bloquear_cruce"],
+    ["LINEAS TRANSVERSALES","paso_cebra"],
+    ["PISTA PRIORITARIA","pista_emergencia"],
+    ["VEHICULO DE EMERGENCIA","pista_emergencia"],
     ["PARE","pare"]
   ];
 
@@ -183,6 +244,10 @@
     // Señalización: color de transitorias / color inicial de trabajos -> mostrar señal naranja
     if(e.indexOf("TRANSITORIAS")>=0 && e.indexOf("COLOR")>=0) return "trabajos";
     if(e.indexOf("PRESENCIA DE TRABAJOS EN LA VIA")>=0) return "trabajos";
+    // muestras de categoría
+    if(e.indexOf("FINALIDAD TIENEN LAS SENALES REGLAMENTARIAS")>=0) return "reglamentaria_sample";
+    if(e.indexOf("PROPOSITO DE LAS SENALES INFORMATIVAS")>=0) return "informativa_sample";
+    if(e.indexOf("SENALES INFORMATIVAS DE ATRACTIVO TURISTICO")>=0) return "info_turistica";
     return null;
   }
 
