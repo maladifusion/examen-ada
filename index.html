@@ -305,7 +305,7 @@
   function fmtTime(s){var m=Math.floor(s/60),ss=s%60;return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss;}
   function countBy(m){return BANCO.filter(function(q){return q.modulo===m;}).length;}
   function vibrate(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
-  var APP_VERSION="v6";
+  var APP_VERSION="v7";
 
   // ---------- PWA: instalar + service worker ----------
   var deferredPrompt=null;
@@ -364,6 +364,7 @@
   else{ $("voiceOn").checked=false;$("voiceOn").disabled=true;$("voiceSel").disabled=true;$("voiceHint").textContent="Este navegador no soporta lectura por voz."; }
   function stopSpeak(){ if(synth){try{synth.cancel();}catch(e){}} }
   function setVoiceStatus(t){ var s=$("voiceStatus"); if(s)s.textContent=t; }
+  function setSpeakBtn(active){ var b=$("speakBtn"); if(b)b.textContent=active?"⏹️ Detener":"🔊 Escuchar"; }
   var _utter=null; // referencia persistente: evita que Chrome recolecte la voz antes de sonar
   function speak(q){
     if(!synth){ setVoiceStatus("Este navegador no soporta lectura por voz."); return; }
@@ -376,9 +377,9 @@
     var u=new SpeechSynthesisUtterance(txt);
     if(chosenVoice){u.voice=chosenVoice;u.lang=chosenVoice.lang||"es-CL";}else{u.lang="es-CL";}
     u.rate=0.98; u.pitch=1.02;
-    u.onstart=function(){ setVoiceStatus("🔊 Hablando…"); };
-    u.onend=function(){ setVoiceStatus("Voz lista ✓"); };
-    u.onerror=function(e){ setVoiceStatus("Error de voz: "+((e&&e.error)||"desconocido")); };
+    u.onstart=function(){ setVoiceStatus("🔊 Hablando…"); setSpeakBtn(true); };
+    u.onend=function(){ setVoiceStatus("Voz lista ✓"); setSpeakBtn(false); };
+    u.onerror=function(e){ setVoiceStatus("Error de voz: "+((e&&e.error)||"desconocido")); setSpeakBtn(false); };
     _utter=u;
     setVoiceStatus("Iniciando voz… ("+(chosenVoice?chosenVoice.name:"voz por defecto")+")");
     try{ synth.speak(u); }catch(e){ setVoiceStatus("No se pudo iniciar: "+e.message); }
@@ -455,7 +456,7 @@
     buildNav();
     // re-disparar animación del cuerpo
     var qb=$("qBody"); qb.style.animation="none"; void qb.offsetWidth; qb.style.animation="";
-    stopSpeak();
+    stopSpeak(); setSpeakBtn(false);
   }
   function markAnswered(btn,letra,q,chosen){ btn.setAttribute("disabled",""); if(letra===q.correcta)btn.classList.add("ok"); else if(letra===chosen)btn.classList.add("bad"); else btn.classList.add("dim"); }
   function onAnswer(letra,btn){
@@ -530,7 +531,7 @@
 
   // eventos
   $("startBtn").addEventListener("click",startSession);
-  $("speakBtn").addEventListener("click",function(){ensureAudio();if(S)speak(S.items[S.idx].ref);});
+  $("speakBtn").addEventListener("click",function(){ ensureAudio(); if(synth&&(synth.speaking||synth.pending)){ stopSpeak(); setSpeakBtn(false); return; } if(S)speak(S.items[S.idx].ref); });
   $("exitBtn").addEventListener("click",function(){if(S&&S.timer){clearInterval(S.timer);}stopSpeak();show("menu");});
   $("rAgain").addEventListener("click",function(){selMode=S.mode;startSession();});
   $("rMenu").addEventListener("click",function(){show("menu");});
