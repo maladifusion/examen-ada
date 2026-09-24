@@ -223,9 +223,14 @@
           <select id="voiceSel" title="Elegir voz"></select>
         </div>
         <p style="font-size:12px;color:var(--muted);margin:10px 0 0" id="voiceHint">Buscando voces en español…</p>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn ghost sm" id="testSound">🔔 Probar sonido</button>
+          <button class="btn ghost sm" id="testVoice">🗣️ Probar voz</button>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Consejo: sube el volumen y quita el silencio del teléfono.</p>
       </div>
     </div>
-    <p class="foot">250 preguntas · fuente: curso Clase B + catálogo CONASET</p>
+    <p class="foot">250 preguntas · fuente: curso Clase B + catálogo CONASET · <span id="verTag"></span></p>
   </section>
 
   <!-- ============ QUIZ ============ -->
@@ -299,6 +304,7 @@
   function fmtTime(s){var m=Math.floor(s/60),ss=s%60;return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss;}
   function countBy(m){return BANCO.filter(function(q){return q.modulo===m;}).length;}
   function vibrate(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+  var APP_VERSION="v4";
 
   // ---------- PWA: instalar + service worker ----------
   var deferredPrompt=null;
@@ -327,6 +333,9 @@
   function soundOk(){ensureAudio();beep([660,880,1175],0.16,"sine");}
   function soundBad(){ensureAudio();beep([220,160],0.22,"square");}
   function soundWin(){ensureAudio();beep([523,659,784,1046],0.18,"sine");}
+  // desbloquear/reanudar el audio ante cualquier toque (móviles)
+  document.addEventListener("pointerdown",function(){ensureAudio();},{passive:true});
+  document.addEventListener("touchend",function(){ensureAudio();},{passive:true});
 
   // ---------- voz (Web Speech) ----------
   var synth=("speechSynthesis" in window)?window.speechSynthesis:null;
@@ -344,10 +353,10 @@
   if(synth){ loadVoices(); if(typeof synth.onvoiceschanged!=="undefined")synth.onvoiceschanged=loadVoices; setTimeout(loadVoices,600); }
   else{ $("voiceOn").checked=false;$("voiceOn").disabled=true;$("voiceSel").disabled=true;$("voiceHint").textContent="Este navegador no soporta lectura por voz."; }
   function stopSpeak(){ if(synth){try{synth.cancel();}catch(e){}} }
-  function speak(q){ if(!synth||!$("voiceOn").checked||!chosenVoice)return; stopSpeak();
+  function speak(q){ if(!synth||!$("voiceOn").checked)return; if(!chosenVoice)loadVoices(); stopSpeak();
     var txt=q.enunciado+". "; if(q.imagen)txt+="Pregunta con figura. ";
     q.alternativas.forEach(function(a){txt+=" Opción "+a.letra+": "+a.texto+". ";});
-    var u=new SpeechSynthesisUtterance(txt); u.voice=chosenVoice; u.lang=chosenVoice.lang||"es-CL"; u.rate=0.98; u.pitch=1.02; try{synth.speak(u);}catch(e){}
+    var u=new SpeechSynthesisUtterance(txt); if(chosenVoice){u.voice=chosenVoice;u.lang=chosenVoice.lang||"es-CL";}else{u.lang="es-CL";} u.rate=0.98; u.pitch=1.02; try{synth.speak(u);}catch(e){}
   }
   $("voiceSel").addEventListener("change",function(){var i=parseInt(this.value,10);if(voices[i])chosenVoice=voices[i];$("voiceHint").textContent="Voz elegida: "+chosenVoice.name+".";});
   $("voiceOn").addEventListener("change",function(){if(!this.checked)stopSpeak();});
@@ -500,6 +509,11 @@
   $("rAgain").addEventListener("click",function(){selMode=S.mode;startSession();});
   $("rMenu").addEventListener("click",function(){show("menu");});
   $("rReview").addEventListener("click",reviewErrors);
+
+  // botones de prueba de audio
+  $("testSound").addEventListener("click",function(){ ensureAudio(); setTimeout(soundOk,60); });
+  $("testVoice").addEventListener("click",function(){ ensureAudio(); speak({enunciado:"Hola Ada, esta es una prueba de voz. Vamos a estudiar para tu licencia.",alternativas:[],imagen:false}); });
+  var vt=$("verTag"); if(vt)vt.textContent=APP_VERSION;
 
   if(!BANCO.length){ $("menu").innerHTML='<div class="card"><b>No se pudieron cargar las preguntas.</b><br>Asegúrate de que <code>preguntas.js</code> esté junto a este index.html.</div>'; }
   else{ buildMenu(); }
